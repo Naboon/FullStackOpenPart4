@@ -51,12 +51,12 @@ const blogs = [
   }
 ]
 
-test('dummy returns one', () => {
-  const blogs = []
+// test('dummy returns one', () => {
+//   const blogs = []
 
-  const result = listHelper.dummy(blogs)
-  expect(result).toBe(1)
-})
+//   const result = listHelper.dummy(blogs)
+//   expect(result).toBe(1)
+// })
 
 describe('total likes', () => {
   const listWithOneBlog = [
@@ -94,6 +94,19 @@ describe('favorite blog', () => {
       title: 'Canonical string reduction',
       author: 'Edsger W. Dijkstra',
       likes: 12
+    }
+
+    expect(result).toEqual(expected)
+  })
+})
+
+describe('most blogs', () => {
+  test('the author with most blogs', () => {
+    const result = listHelper.mostBlogs(blogs)
+
+    const expected = {
+      author: 'Robert C. Martin',
+      blogs: 3
     }
 
     expect(result).toEqual(expected)

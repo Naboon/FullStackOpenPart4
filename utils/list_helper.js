@@ -1,6 +1,6 @@
-const dummy = (blogs) => {
-  return 1
-}
+// const dummy = (blogs) => {
+//   return 1
+// }
 
 const totalLikes = (blogs) => {
   const reducer = (sum, blog) => {
@@ -23,7 +23,7 @@ const favoriteBlog = (blogs) => {
       : blog
   }
 
-  let favoriteBlog = blogs.reduce(reducer)
+  let favoriteBlog = blogs.reduce(reducer, {})
 
   return {
     title: favoriteBlog.title,
@@ -32,8 +32,33 @@ const favoriteBlog = (blogs) => {
   }
 }
 
+const mostBlogs = (blogs) => {
+  if (Object.keys(blogs).length === 0) {
+    return {}
+  }
+
+  const count = blogs
+    .reduce((r, { author }) => {
+      r[author] = r[author] || { author, blogs: 0 }
+      r[author].blogs++
+      return r
+    }, {})
+
+  const authors = Object
+    .values(count)
+
+  const reducer = (max, author) => {
+    return max.blogs > author.blogs
+      ? max
+      : author
+  }
+
+  return authors.reduce(reducer, {})
+}
+
 module.exports = {
-  dummy,
+  //dummy,
   totalLikes,
-  favoriteBlog
+  favoriteBlog,
+  mostBlogs
 }
