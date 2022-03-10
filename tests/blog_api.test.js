@@ -32,7 +32,7 @@ test('blogs have an identificator field called "id"', async () => {
   expect(ids).toBeDefined()
 })
 
-test.only('a blog can be added', async () => {
+test('a blog can be added', async () => {
   const newBlog = {
     title: 'How to Create a Blog',
     author: 'Ricardo Gonzales',
@@ -53,6 +53,25 @@ test.only('a blog can be added', async () => {
   expect(titles).toContain(
     'How to Create a Blog'
   )
+})
+
+test('a blog with no likes value is assigned 0 likes', async () => {
+  const newBlog = {
+    title: 'A Lonely Person',
+    author: 'Alfred Kwak',
+    url: 'http://everydayproblems.com/blogs/loneliness',
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /application\/json/)
+
+  const blogsAtEnd = await helper.blogsInDb()
+
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length + 1)
+  expect(blogsAtEnd[blogsAtEnd.length - 1].likes).toEqual(0)
 })
 
 afterAll(() => {
