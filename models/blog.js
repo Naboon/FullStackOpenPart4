@@ -9,14 +9,8 @@ const blogSchema = mongoose.Schema({
     type: String,
     required: true
   },
-  url: {
-    type: String,
-    required: true
-  },
-  likes: {
-    type: Number,
-    required: true
-  }
+  url: String,
+  likes: Number
 })
 
 module.exports = mongoose.model('Blog', blogSchema)
