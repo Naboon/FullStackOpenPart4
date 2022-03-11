@@ -74,6 +74,38 @@ test('a blog with no likes value is assigned 0 likes', async () => {
   expect(blogsAtEnd[blogsAtEnd.length - 1].likes).toEqual(0)
 })
 
+test('a blog without title will not be added', async () => {
+  const newBlog = {
+    author: 'Fred Goodman',
+    url: 'http://blogverse.com/blogs',
+    likes: 254
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(400)
+
+  const blogsAtEnd = await helper.blogsInDb()
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+})
+
+test('a blog without url will not be added', async () => {
+  const newBlog = {
+    title: 'Travelling Madman',
+    author: 'Saul Simpson',
+    likes: 775
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(400)
+
+  const blogsAtEnd = await helper.blogsInDb()
+  expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+})
+
 afterAll(() => {
   mongoose.connection.close()
 })
