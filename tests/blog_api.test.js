@@ -113,10 +113,10 @@ describe('addition of a new blog', () => {
 describe('deletion of a blog', () => {
   test('succeeds with status code 204 if id is valid', async () => {
     const blogsAtStart = await helper.blogsInDb()
-    const blogtoDelete = blogsAtStart[0]
+    const blogToDelete = blogsAtStart[0]
 
     await api
-      .delete(`/api/blogs/${blogtoDelete.id}`)
+      .delete(`/api/blogs/${blogToDelete.id}`)
       .expect(204)
 
     const blogsAtEnd = await helper.blogsInDb()
@@ -125,8 +125,94 @@ describe('deletion of a blog', () => {
 
     const titles = blogsAtEnd.map(r => r.title)
 
-    expect(titles).not.toContain(blogtoDelete.title)
+    expect(titles).not.toContain(blogToDelete.title)
   })
+})
+
+describe('updating a blog', () => {
+  test('with a new value for title succeeds with status code 200',
+    async () => {
+      const blogsAtStart = await helper.blogsInDb()
+      const blogToUpdate = blogsAtStart[0]
+
+      const updatedBlog = {
+        title: 'Surprice'
+      }
+
+      await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send(updatedBlog)
+        .expect(200)
+
+      const blogsAtEnd = await helper.blogsInDb()
+
+      expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+
+      expect(blogsAtEnd[0].title).toEqual(updatedBlog.title)
+    })
+
+  test('with a new value for author succeeds with status code 200',
+    async () => {
+      const blogsAtStart = await helper.blogsInDb()
+      const blogToUpdate = blogsAtStart[0]
+
+      const updatedBlog = {
+        author: 'Kenneth Hamilton'
+      }
+
+      await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send(updatedBlog)
+        .expect(200)
+
+      const blogsAtEnd = await helper.blogsInDb()
+
+      expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+
+      expect(blogsAtEnd[0].author).toEqual(updatedBlog.author)
+    })
+
+  test('with a new value for url succeeds with status code 200',
+    async () => {
+      const blogsAtStart = await helper.blogsInDb()
+      const blogToUpdate = blogsAtStart[0]
+
+      const updatedBlog = {
+        url: 'http://foodblogs.com/kennethsasianadventures'
+      }
+
+      await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send(updatedBlog)
+        .expect(200)
+
+      const blogsAtEnd = await helper.blogsInDb()
+
+      expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+
+      expect(blogsAtEnd[0].url).toEqual(updatedBlog.url)
+    })
+
+  test('with a new value for likes succeeds with status code 200',
+    async () => {
+      const blogsAtStart = await helper.blogsInDb()
+      const blogToUpdate = blogsAtStart[0]
+
+      const updatedBlog = {
+        likes: 1533
+      }
+
+      await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send(updatedBlog)
+        .expect(200)
+
+      const blogsAtEnd = await helper.blogsInDb()
+
+      expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+
+      expect(blogsAtEnd[0].likes).toEqual(updatedBlog.likes)
+    })
 })
 
 afterAll(() => {
