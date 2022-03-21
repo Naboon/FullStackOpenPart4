@@ -1,6 +1,12 @@
 const mongoose = require('mongoose')
 
 const userSchema = mongoose.Schema({
+  blogs: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Blog'
+    }
+  ],
   username: {
     type: String,
     minlength: [3, 'username must be at least 3 characters long'],

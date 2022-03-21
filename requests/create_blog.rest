@@ -2,8 +2,9 @@ POST http://localhost:3003/api/blogs
 Content-Type: application/json
 
 {
-    "title": "All About Fish",
-    "author": "Gerhard Manning",
-    "url": "http://kitchentrends.com/allaboutfish",
-    "likes": 882
+    "url": "http://foodblogs.com/lizzyschinesecuisine",
+    "title": "Chinese Cuisine",
+    "author": "Lizzy Smith",
+    "userId": "6238741602cdb0aed09dc6cb",
+    "likes": 572
 }
