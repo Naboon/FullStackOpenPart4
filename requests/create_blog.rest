@@ -1,10 +1,10 @@
 POST http://localhost:3003/api/blogs
 Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1sdXVra2FpIiwiaWQiOiI2MjM4NzQxNjAyY2RiMGFlZDA5ZGM2Y2IiLCJpYXQiOjE2NDc4NzM0NDJ9.E_xrXLRsTfxrEHG3vBgU8tcsHJxcmET7Qe0vsr6zwJ4
 
 {
-    "url": "http://foodblogs.com/lizzyschinesecuisine",
-    "title": "Chinese Cuisine",
-    "author": "Lizzy Smith",
-    "userId": "6238741602cdb0aed09dc6cb",
-    "likes": 572
+    "url": "http://motorsportworld.com/blogs/ajones/fieryferrari",
+    "title": "Fiery Ferrari",
+    "author": "Alan Jones",
+    "likes": 1403
 }
