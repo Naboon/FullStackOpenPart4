@@ -1,9 +1,12 @@
 const supertest = require('supertest')
 const mongoose = require('mongoose')
+const bcrypt = require('bcrypt')
+
 const helper = require('./test_helper')
 const app = require('../app')
 const api = supertest(app)
 
+const User = require('../models/user')
 const Blog = require('../models/blog')
 
 beforeEach(async () => {
@@ -130,89 +133,139 @@ describe('deletion of a blog', () => {
 })
 
 describe('updating a blog', () => {
-  test('with a new value for title succeeds with status code 200',
-    async () => {
-      const blogsAtStart = await helper.blogsInDb()
-      const blogToUpdate = blogsAtStart[0]
+  test('with a new value for title succeeds with status code 200', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToUpdate = blogsAtStart[0]
 
-      const updatedBlog = {
-        title: 'Surprice'
-      }
+    const updatedBlog = {
+      title: 'Surprice'
+    }
 
-      await api
-        .put(`/api/blogs/${blogToUpdate.id}`)
-        .send(updatedBlog)
-        .expect(200)
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(updatedBlog)
+      .expect(200)
 
-      const blogsAtEnd = await helper.blogsInDb()
+    const blogsAtEnd = await helper.blogsInDb()
 
-      expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
 
-      expect(blogsAtEnd[0].title).toEqual(updatedBlog.title)
-    })
+    expect(blogsAtEnd[0].title).toEqual(updatedBlog.title)
+  })
 
-  test('with a new value for author succeeds with status code 200',
-    async () => {
-      const blogsAtStart = await helper.blogsInDb()
-      const blogToUpdate = blogsAtStart[0]
+  test('with a new value for author succeeds with status code 200', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToUpdate = blogsAtStart[0]
 
-      const updatedBlog = {
-        author: 'Kenneth Hamilton'
-      }
+    const updatedBlog = {
+      author: 'Kenneth Hamilton'
+    }
 
-      await api
-        .put(`/api/blogs/${blogToUpdate.id}`)
-        .send(updatedBlog)
-        .expect(200)
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(updatedBlog)
+      .expect(200)
 
-      const blogsAtEnd = await helper.blogsInDb()
+    const blogsAtEnd = await helper.blogsInDb()
 
-      expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
 
-      expect(blogsAtEnd[0].author).toEqual(updatedBlog.author)
-    })
+    expect(blogsAtEnd[0].author).toEqual(updatedBlog.author)
+  })
 
-  test('with a new value for url succeeds with status code 200',
-    async () => {
-      const blogsAtStart = await helper.blogsInDb()
-      const blogToUpdate = blogsAtStart[0]
+  test('with a new value for url succeeds with status code 200', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToUpdate = blogsAtStart[0]
 
-      const updatedBlog = {
-        url: 'http://foodblogs.com/kennethsasianadventures'
-      }
+    const updatedBlog = {
+      url: 'http://foodblogs.com/kennethsasianadventures'
+    }
 
-      await api
-        .put(`/api/blogs/${blogToUpdate.id}`)
-        .send(updatedBlog)
-        .expect(200)
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(updatedBlog)
+      .expect(200)
 
-      const blogsAtEnd = await helper.blogsInDb()
+    const blogsAtEnd = await helper.blogsInDb()
 
-      expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
 
-      expect(blogsAtEnd[0].url).toEqual(updatedBlog.url)
-    })
+    expect(blogsAtEnd[0].url).toEqual(updatedBlog.url)
+  })
 
-  test('with a new value for likes succeeds with status code 200',
-    async () => {
-      const blogsAtStart = await helper.blogsInDb()
-      const blogToUpdate = blogsAtStart[0]
+  test('with a new value for likes succeeds with status code 200', async () => {
+    const blogsAtStart = await helper.blogsInDb()
+    const blogToUpdate = blogsAtStart[0]
 
-      const updatedBlog = {
-        likes: 1533
-      }
+    const updatedBlog = {
+      likes: 1533
+    }
 
-      await api
-        .put(`/api/blogs/${blogToUpdate.id}`)
-        .send(updatedBlog)
-        .expect(200)
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(updatedBlog)
+      .expect(200)
 
-      const blogsAtEnd = await helper.blogsInDb()
+    const blogsAtEnd = await helper.blogsInDb()
 
-      expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
 
-      expect(blogsAtEnd[0].likes).toEqual(updatedBlog.likes)
-    })
+    expect(blogsAtEnd[0].likes).toEqual(updatedBlog.likes)
+  })
+})
+
+describe('when there is initially one user at db', () => {
+  beforeEach(async () => {
+    await User.deleteMany({})
+
+    const passwordHash = await bcrypt.hash('sekret', 10)
+    const user = new User({ username: 'root', passwordHash })
+
+    await user.save()
+  })
+
+  test.only('creation succeeds with a fresh username', async () => {
+    const usersAtStart = await helper.usersInDb()
+
+    const newUser = {
+      username: 'mluukkai',
+      name: 'Matti Luukkainen',
+      password: 'salainen',
+    }
+
+    await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(201)
+      .expect('Content-Type', /application\/json/)
+
+    const usersAtEnd = await helper.usersInDb()
+    expect(usersAtEnd).toHaveLength(usersAtStart.length + 1)
+
+    const usernames = usersAtEnd.map(u => u.username)
+    expect(usernames).toContain(newUser.username)
+  })
+
+  // test('creation fails with proper statuscode and message if username already taken', async () => {
+  //   const usersAtStart = await helper.usersInDb()
+
+  //   const newUser = {
+  //     username: 'root',
+  //     name: 'Superuser',
+  //     password: 'salainen',
+  //   }
+
+  //   const result = await api
+  //     .post('/api/users')
+  //     .send(newUser)
+  //     .expect(400)
+  //     .expect('Content-Type', /application\/json/)
+
+  //   expect(result.body.error).toContain('username must be unique')
+
+  //   const usersAtEnd = await helper.usersInDb()
+  //   expect(usersAtEnd).toHaveLength(usersAtStart.length)
+  // })
 })
 
 afterAll(() => {
