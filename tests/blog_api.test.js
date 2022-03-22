@@ -9,8 +9,33 @@ const api = supertest(app)
 const User = require('../models/user')
 const Blog = require('../models/blog')
 
+const getUserToken = async () => {
+  const user = {
+    username: 'root',
+    password: 'sekret'
+  }
+
+  const response = await api
+    .post('/api/login')
+    .send(user)
+    .expect(200)
+
+  return response.body.token
+}
+
 beforeEach(async () => {
+
+  await User.deleteMany({})
+  const passwordHash = await bcrypt.hash('sekret', 10)
+  const user = new User({ username: 'root', name: 'Superuser', passwordHash })
+  await user.save()
+
+  const users = await helper.usersInDb()
+  const userId = users[0].id
+
   await Blog.deleteMany({})
+  const blogs = helper.initialBlogs
+  blogs.forEach(b => b.user = userId)
   await Blog.insertMany(helper.initialBlogs)
 })
 
@@ -39,6 +64,8 @@ describe('when there are initial blogs saved', () => {
 
 describe('addition of a new blog', () => {
   test('succeeds with status code 201', async () => {
+    const token = await getUserToken()
+
     const newBlog = {
       title: 'How to Create a Blog',
       author: 'Ricardo Gonzales',
@@ -49,6 +76,7 @@ describe('addition of a new blog', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
+      .set('Authorization', `bearer ${token}`)
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
@@ -61,7 +89,29 @@ describe('addition of a new blog', () => {
     )
   })
 
+  test('fails with status code 401 if no token is given', async () => {
+    const newBlog = {
+      title: 'How to Create a Blog',
+      author: 'Ricardo Gonzales',
+      url: 'http://techtoday.com/guides/blog',
+      likes: 1644
+    }
+
+    const result = await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(401)
+      .expect('Content-Type', /application\/json/)
+
+    expect(result.body.error).toContain('invalid token')
+
+    const blogsAtEnd = await helper.blogsInDb()
+    expect(blogsAtEnd).toHaveLength(helper.initialBlogs.length)
+  })
+
   test('without value for likes is assigned 0 likes', async () => {
+    const token = await getUserToken()
+
     const newBlog = {
       title: 'A Lonely Person',
       author: 'Alfred Kwak',
@@ -71,6 +121,7 @@ describe('addition of a new blog', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
+      .set('Authorization', `bearer ${token}`)
       .expect(201)
       .expect('Content-Type', /application\/json/)
 
@@ -81,6 +132,8 @@ describe('addition of a new blog', () => {
   })
 
   test('fails with status code 400 if title is not assigned', async () => {
+    const token = await getUserToken()
+
     const newBlog = {
       author: 'Fred Goodman',
       url: 'http://blogverse.com/blogs',
@@ -90,6 +143,7 @@ describe('addition of a new blog', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
+      .set('Authorization', `bearer ${token}`)
       .expect(400)
 
     const blogsAtEnd = await helper.blogsInDb()
@@ -97,6 +151,8 @@ describe('addition of a new blog', () => {
   })
 
   test('fails with status code 400 if url is not assigned', async () => {
+    const token = await getUserToken()
+
     const newBlog = {
       title: 'Travelling Madman',
       author: 'Saul Simpson',
@@ -106,6 +162,7 @@ describe('addition of a new blog', () => {
     await api
       .post('/api/blogs')
       .send(newBlog)
+      .set('Authorization', `bearer ${token}`)
       .expect(400)
 
     const blogsAtEnd = await helper.blogsInDb()
@@ -115,11 +172,14 @@ describe('addition of a new blog', () => {
 
 describe('deletion of a blog', () => {
   test('succeeds with status code 204 if id is valid', async () => {
+    const token = await getUserToken()
+
     const blogsAtStart = await helper.blogsInDb()
     const blogToDelete = blogsAtStart[0]
 
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', `bearer ${token}`)
       .expect(204)
 
     const blogsAtEnd = await helper.blogsInDb()
@@ -215,15 +275,6 @@ describe('updating a blog', () => {
 })
 
 describe('when there is initially one user at db', () => {
-  beforeEach(async () => {
-    await User.deleteMany({})
-
-    const passwordHash = await bcrypt.hash('sekret', 10)
-    const user = new User({ username: 'root', passwordHash })
-
-    await user.save()
-  })
-
   test('creation succeeds with a fresh username', async () => {
     const usersAtStart = await helper.usersInDb()
 
